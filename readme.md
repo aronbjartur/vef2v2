@@ -9,6 +9,8 @@ ekkert css í þetta skipti
 
 postgres database á railway
 
+tóskt ekki að gera netlify síðu
+
 # llm notkun
 
 form.ejs og category.ejs eru eftir chatgbt. 
