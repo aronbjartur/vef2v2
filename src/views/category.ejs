@@ -1,5 +1,59 @@
 <%- include('header') -%>
 
-spurnigaflokkur!
+<h1><%= title %></h1>
+
+<% if (questions && questions.length > 0) { %>
+  <div id="quiz">
+    <% questions.forEach(function(question, qIndex) { %>
+      <div class="question-block">
+        <!-- Display the question text as plain text (using question.text) -->
+        <div class="question-text">
+          <strong>Spurning:</strong> <%= question.text %>
+        </div>
+        <% if (question.answers && question.answers.length > 0) { %>
+          <ul class="answers-list">
+            <% question.answers.forEach(function(answer, aIndex) { %>
+              <li>
+                <label>
+                  <input type="radio" name="question-<%= qIndex %>" value="<%= aIndex %>" data-correct="<%= answer.correct %>">
+                  <%= answer.text %>
+                </label>
+              </li>
+            <% }); %>
+          </ul>
+          <button type="button" onclick="checkAnswer(<%= qIndex %>)">Skoða svar</button>
+          <p id="result-<%= qIndex %>"></p>
+        <% } else { %>
+          <p>Engin svör til staðar</p>
+        <% } %>
+      </div>
+    <% }); %>
+  </div>
+<% } else { %>
+  <p>Engar spurningar til staðar í þessum flokki.</p>
+<% } %>
+
+<script>
+function checkAnswer(qIndex) {
+  var radios = document.getElementsByName('question-' + qIndex);
+  var resultElem = document.getElementById('result-' + qIndex);
+  var selected = null;
+  for (var i = 0; i < radios.length; i++) {
+    if (radios[i].checked) {
+      selected = radios[i];
+      break;
+    }
+  }
+  if (!selected) {
+    resultElem.textContent = "Veldu svar.";
+    return;
+  }
+  if (selected.getAttribute('data-correct') === "true") {
+    resultElem.textContent = "Rétt svar!";
+  } else {
+    resultElem.textContent = "Rangt svar!";
+  }
+}
+</script>
 
 <%- include('footer') -%>

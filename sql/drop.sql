@@ -1,1 +1,3 @@
-DROP TABLE IF EXISTS public.categories;
+DROP TABLE IF EXISTS public.answers CASCADE;
+DROP TABLE IF EXISTS public.questions CASCADE;
+DROP TABLE IF EXISTS public.categories CASCADE;

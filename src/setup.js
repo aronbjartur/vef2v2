@@ -1,4 +1,5 @@
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
+import path from 'node:path';
 import { Database } from './lib/db.client.js';
 import { environment } from './lib/environment.js';
 import { logger as loggerSingleton } from './lib/logger.js';
@@ -41,26 +42,70 @@ async function setupDbFromFiles(db, logger) {
   return true;
 }
 
+async function importJsonData(db, logger) {
+  const dataDir = path.join(process.cwd(), 'data');
+  const files = await readdir(dataDir);
+  for (const file of files) {
+    
+    if (!file.endsWith('.json')) continue;
+    const filePath = path.join(dataDir, file);
+    const fileData = await readFile(filePath, 'utf-8');
+    const jsonData = JSON.parse(fileData);
+    if (!Array.isArray(jsonData.questions)) continue;
+    const categoryName = jsonData.title.trim().toLowerCase();
+    let categoryResult = await db.query(
+      'INSERT INTO categories (name) VALUES ($1) ON CONFLICT (name) DO NOTHING RETURNING id',
+      [categoryName]
+    );
+    let categoryId;
+    if (categoryResult && categoryResult.rows.length > 0) {
+      categoryId = categoryResult.rows[0].id;
+    } else {
+      const existing = await db.query('SELECT id FROM categories WHERE name = $1', [categoryName]);
+      if (existing && existing.rows.length > 0) {
+        categoryId = existing.rows[0].id;
+      } else continue;
+    }
+    for (const questionObj of jsonData.questions) {
+      if (
+        !questionObj.question ||
+        typeof questionObj.question !== 'string' ||
+        questionObj.question.trim().length === 0 ||
+        !Array.isArray(questionObj.answers) ||
+        questionObj.answers.length < 2
+      ) {
+        continue;
+      }
+      const questionText = questionObj.question.trim();
+      const questionResult = await db.query(
+        'INSERT INTO questions (category_id, text) VALUES ($1, $2) RETURNING id',
+        [categoryId, questionText]
+      );
+      if (!questionResult || questionResult.rows.length === 0) continue;
+      const questionId = questionResult.rows[0].id;
+      for (const answerObj of questionObj.answers) {
+        if (!answerObj.answer || typeof answerObj.answer !== 'string' || typeof answerObj.correct !== 'boolean') continue;
+        const answerText = answerObj.answer.trim();
+        await db.query(
+          'INSERT INTO answers (question_id, text, correct) VALUES ($1, $2, $3)',
+          [questionId, answerText, answerObj.correct]
+        );
+      }
+    }
+  }
+  logger.info("JSON data imported successfully");
+}
+
 async function create() {
   const logger = loggerSingleton;
   const env = environment(process.env, logger);
-
-  if (!env) {
-    process.exit(1);
-  }
-
+  if (!env) process.exit(1);
   logger.info('starting setup');
-
   const db = new Database(env.connectionString, logger);
   db.open();
-
   const resultFromFileSetup = await setupDbFromFiles(db, logger);
-
-  if (!resultFromFileSetup) {
-    logger.info('error setting up database from files');
-    process.exit(1);
-  }
-
+  if (!resultFromFileSetup) process.exit(1);
+  await importJsonData(db, logger);
   logger.info('setup complete');
   await db.close();
 }

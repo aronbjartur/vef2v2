@@ -1,21 +1,73 @@
 <%- include('header') -%>
 
+<h1>Búa til spurningu</h1>
 <form method="post" action="/form">
+  <!-- Velja eða búa til flokk -->
+  <fieldset>
+    <legend>Veldu eða búðu til flokk</legend>
+    <label for="category_id">Veldu flokk:</label>
+    <select id="category_id" name="category_id" required>
+      <option value="">-- Veldu flokk --</option>
+      <% categories.forEach(function(cat) { %>
+        <option value="<%= cat.id %>"><%= cat.name %></option>
+      <% }); %>
+      <option value="new">Nýr flokk</option>
+    </select>
+    <div id="new-category-container" style="display: none;">
+      <label for="new_category">Nýr flokk (sláðu inn nafn):</label>
+      <input type="text" id="new_category" name="new_category">
+    </div>
+  </fieldset>
 
-  <label for="name">Heiti flokks:</label>
-  <input type="text" id="name" name="name">
-  <input type="number" id="name" name="number">
-  <label>rétt svar #1: <input type="radio" id="name" name="rett_svar" value="1"></label>
-  <label>rétt svar #2: <input type="radio" id="name" name="rett_svar" value="1"></label>
-  <label>rétt svar #3: <input type="radio" id="name" name="rett_svar" value="1"></label>
+  <!-- Spurning -->
+  <fieldset>
+    <legend>Spurning</legend>
+    <label for="question">Spurning:</label>
+    <textarea id="question" name="question" required placeholder="Sláðu inn spurninguna hér"></textarea>
+  </fieldset>
 
-  <input type="checkbox" id="name" name="checkbox">
-  <select>
-    <option>foo</option>
-    <option value="foobar">bar</option>
-  </select>
-  <textarea name="text"></textarea>
-  <button type="submit">Búa til flokk</button>
+  <!-- Svör -->
+  <fieldset>
+    <legend>Svarmöguleikar</legend>
+    <label for="answer1">Svar #1:</label>
+    <input type="text" id="answer1" name="answers[]" required placeholder="Svar 1">
+    
+    <label for="answer2">Svar #2:</label>
+    <input type="text" id="answer2" name="answers[]" required placeholder="Svar 2">
+    
+    <label for="answer3">Svar #3:</label>
+    <input type="text" id="answer3" name="answers[]" required placeholder="Svar 3">
+    
+    <label for="answer4">Svar #4:</label>
+    <input type="text" id="answer4" name="answers[]" required placeholder="Svar 4">
+  </fieldset>
+
+  <!-- Velja rétt svar -->
+  <fieldset>
+    <legend>Rétt svar</legend>
+    <label for="correct_answer">Veldu númer rétta svarsins:</label>
+    <select id="correct_answer" name="correct_answer" required>
+      <option value="">-- Veldu rétt svar --</option>
+      <option value="1">Svar #1</option>
+      <option value="2">Svar #2</option>
+      <option value="3">Svar #3</option>
+      <option value="4">Svar #4</option>
+    </select>
+  </fieldset>
+
+  <button type="submit">Skrá spurningu</button>
 </form>
+
+<script>
+// Show/hide the new category input based on selection
+document.getElementById('category_id').addEventListener('change', function() {
+  var container = document.getElementById('new-category-container');
+  if (this.value === "new") {
+    container.style.display = "block";
+  } else {
+    container.style.display = "none";
+  }
+});
+</script>
 
 <%- include('footer') -%>
