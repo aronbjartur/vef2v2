@@ -35,7 +35,7 @@ router.get('/form', async (req, res) => {
 });
 
 router.post('/form', async (req, res) => {
-  const { name, question, category_id, new_category, correct_answer } = req.body;
+  const { question, category_id, new_category, correct_answer } = req.body;
   let answers = req.body['answers[]'] || req.body.answers;
   console.log(question);
   
