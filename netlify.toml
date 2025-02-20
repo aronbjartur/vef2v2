@@ -1,0 +1,13 @@
+[build]
+  # If you have a build command (like compiling assets), set it here.
+  # If not, you can leave this blank or remove the command.
+  command = "npm run build"
+  publish = "dist"  # Or wherever your static assets reside
+
+[functions]
+  directory = "netlify/functions"
+
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/express"
+  status = 200
