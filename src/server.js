@@ -1,14 +1,11 @@
 import express from 'express';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import router from './routes.js'; // Use a static import
+import { getDatabase } from './lib/db.client.js';
+import router from './routes.js';
 
 const app = express();
 
-const _filename = fileURLToPath(import.meta.url);
-const _dirname = path.dirname(_filename);
-
-const viewsPath = path.join(_dirname, 'views');
+const viewsPath = path.join(process.cwd(), 'src', 'views');
 app.set('views', viewsPath);
 app.set('view engine', 'ejs');
 
